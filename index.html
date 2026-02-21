@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Побег из тюремного блока</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <section class="panel">
+        <h1>Побег из тюремного блока</h1>
+        <p id="storyText" class="story"></p>
+        <ul class="controls">
+          <li>A / D — движение</li>
+          <li>W или Space — прыжок</li>
+          <li>E — взаимодействие с рычагом и дверью</li>
+          <li>R — перезапуск уровня</li>
+        </ul>
+        <p class="goal">
+          Цель: помоги герою выбраться из камеры, открыть блок, взять ключ-карту и выйти через главные ворота.
+        </p>
+        <p id="status" class="status">Статус: в камере.</p>
+      </section>
+      <section class="game-wrapper">
+        <canvas id="game" width="960" height="540" aria-label="2D игра в тюрьме"></canvas>
+      </section>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>
